@@ -109,10 +109,50 @@ const TeamLeaderGroupDetail = () => {
 
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [newComment, setNewComment] = useState('');
+  const [editingLesson, setEditingLesson] = useState<number | null>(null);
+  
+  const generateCalendarLessons = () => {
+    const lessonTitles = [
+      'Python Nedir? Giriş', 'Değişkenler ve Veri Tipleri', 'Koşullu İfadeler', 'Döngüler - For ve While',
+      'Listeler ve Tuple’lar', 'Fonksiyonlar', 'Dosya İşlemleri', 'Proje: Basit Oyun Yapımı',
+      'Sınıflar ve Nesneler', 'Hata Yönetimi', 'Modüller', 'Kütüphaneler',
+      'Veri Analizi Giriş', 'Grafik Çizimi', 'Web Scraping', 'API Kullanımı',
+      'Veritabanı İşlemleri', 'GUI Programlama', 'Oyun Geliştirme 1', 'Oyun Geliştirme 2',
+      'Web Geliştirme Giriş', 'Flask Framework', 'Proje Yönetimi', 'Test Yazma',
+      'Performans Optimizasyonu', 'Güvenlik', 'Deployment', 'DevOps Giriş',
+      'Final Projesi Başlangıç', 'Final Projesi Geliştirme', 'Final Projesi Tamamlama', 'Sertifika ve Değerlendirme'
+    ];
+    
+    const lessons = [];
+    const startDate = new Date('2024-02-01');
+    
+    for (let i = 0; i < 32; i++) {
+      const lessonDate = new Date(startDate);
+      lessonDate.setDate(startDate.getDate() + i * 7);
+      lessonDate.setHours(18, 0, 0, 0);
+      
+      lessons.push({
+        no: i + 1,
+        title: lessonTitles[i],
+        date: lessonDate.toISOString().slice(0, 16).replace('T', ' ') + ':00',
+        status: i < 3 ? 'completed' : 'upcoming',
+        recordLink: i < 3 ? `https://example.com/record${i + 1}` : null
+      });
+    }
+    return lessons;
+  };
+  
+  const [lessons, setLessons] = useState(generateCalendarLessons());
 
-  const lessonDates = [
-    '2024-02-01', '2024-02-03', '2024-02-08', '2024-02-10',
-    '2024-02-15', '2024-02-17', '2024-02-22', '2024-02-24'
+  const moduleBasedLessons = [
+    { code: 'M1D1', module: 1, lesson: 1, date: '2024-02-01' },
+    { code: 'M1D2', module: 1, lesson: 2, date: '2024-02-03' },
+    { code: 'M1D3', module: 1, lesson: 3, date: '2024-02-08' },
+    { code: 'M1D4', module: 1, lesson: 4, date: '2024-02-10' },
+    { code: 'M2D1', module: 2, lesson: 1, date: '2024-02-15' },
+    { code: 'M2D2', module: 2, lesson: 2, date: '2024-02-17' },
+    { code: 'M2D3', module: 2, lesson: 3, date: '2024-02-22' },
+    { code: 'M2D4', module: 2, lesson: 4, date: '2024-02-24' }
   ];
 
   const handleAttendanceChange = (studentId: number, lessonDate: string, status: 'present' | 'absent' | 'excused') => {
@@ -148,6 +188,41 @@ const TeamLeaderGroupDetail = () => {
       // Gerçek uygulamada API'ye gönderilecek
       setNewComment('');
     }
+  };
+
+  const updateLessonDate = (lessonNo: number, newDate: string) => {
+    const updatedLessons = [...lessons];
+    const lessonIndex = updatedLessons.findIndex(l => l.no === lessonNo);
+    
+    if (lessonIndex !== -1) {
+      const oldDate = new Date(updatedLessons[lessonIndex].date);
+      const newDateTime = new Date(newDate);
+      
+      newDateTime.setHours(oldDate.getHours(), oldDate.getMinutes());
+      const newDateString = newDateTime.toISOString().slice(0, 16).replace('T', ' ') + ':00';
+      
+      const nextLessonIndex = lessonIndex + 1;
+      let shouldUpdateAllLessons = false;
+      
+      if (nextLessonIndex < updatedLessons.length) {
+        const nextLessonDate = new Date(updatedLessons[nextLessonIndex].date);
+        shouldUpdateAllLessons = newDateTime >= nextLessonDate;
+      }
+      
+      updatedLessons[lessonIndex].date = newDateString;
+      
+      if (shouldUpdateAllLessons) {
+        for (let i = nextLessonIndex; i < updatedLessons.length; i++) {
+          const prevDate = new Date(updatedLessons[i - 1].date);
+          const nextWeek = new Date(prevDate);
+          nextWeek.setDate(prevDate.getDate() + 7);
+          updatedLessons[i].date = nextWeek.toISOString().slice(0, 16).replace('T', ' ') + ':00';
+        }
+      }
+      
+      setLessons(updatedLessons);
+    }
+    setEditingLesson(null);
   };
 
   return (
@@ -255,11 +330,23 @@ const TeamLeaderGroupDetail = () => {
                               Detay
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
+                          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>{student.name} - Öğrenci Detayları</DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-4">
+                            <Tabs defaultValue="info" className="space-y-4">
+                              <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="info">
+                                  <Users className="h-4 w-4 mr-2" />
+                                  Bilgiler
+                                </TabsTrigger>
+                                <TabsTrigger value="comments">
+                                  <MessageSquare className="h-4 w-4 mr-2" />
+                                  Yorumlar ({student.comments.length})
+                                </TabsTrigger>
+                              </TabsList>
+                              
+                              <TabsContent value="info" className="space-y-4">
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <Label>Ad Soyad</Label>
@@ -344,7 +431,64 @@ const TeamLeaderGroupDetail = () => {
                                   </Button>
                                 </div>
                               </div>
-                            </div>
+                              </TabsContent>
+                              
+                              <TabsContent value="comments" className="space-y-4">
+                                <div className="space-y-4">
+                                  <div className="space-y-3">
+                                    <Label className="text-sm font-medium">Mevcut Yorumlar ({student.comments.length})</Label>
+                                    
+                                    {student.comments.length > 0 ? (
+                                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                                        {student.comments.map((comment) => (
+                                          <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
+                                            <div className="flex items-center justify-between mb-2">
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium">{comment.author}</span>
+                                                <Badge variant="outline" className="text-xs">
+                                                  {comment.authorRole === 'teacher' ? 'Öğretmen' : 'Takım Lideri'}
+                                                </Badge>
+                                              </div>
+                                              <span className="text-xs text-muted-foreground">
+                                                {format(comment.date, 'dd MMM yyyy HH:mm', { locale: tr })}
+                                              </span>
+                                            </div>
+                                            <p className="text-sm text-gray-700">{comment.content}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <p className="text-sm text-muted-foreground italic">Henüz yorum yapılmamış.</p>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="space-y-3 pt-4 border-t">
+                                    <Label className="text-sm font-medium">Yeni Yorum Ekle</Label>
+                                    <Textarea
+                                      placeholder={`${student.name} hakkında yorum ekleyin...`}
+                                      value={selectedStudent?.id === student.id ? newComment : ''}
+                                      onChange={(e) => {
+                                        setSelectedStudent(student);
+                                        setNewComment(e.target.value);
+                                      }}
+                                      className="min-h-[100px]"
+                                    />
+                                    <Button 
+                                      onClick={() => {
+                                        setSelectedStudent(student);
+                                        addComment();
+                                      }} 
+                                      size="sm" 
+                                      disabled={!newComment.trim() || selectedStudent?.id !== student.id}
+                                      className="w-full"
+                                    >
+                                      <MessageSquare className="h-4 w-4 mr-2" />
+                                      Yorum Ekle
+                                    </Button>
+                                  </div>
+                                </div>
+                              </TabsContent>
+                            </Tabs>
                           </DialogContent>
                         </Dialog>
                       </div>
@@ -357,23 +501,85 @@ const TeamLeaderGroupDetail = () => {
             <TabsContent value="calendar" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Grup Takvimi</CardTitle>
+                  <CardTitle>Ders Takvimi</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {lessonDates.map((date, index) => (
-                      <div key={date} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <h4 className="font-medium">Ders {index + 1}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {format(new Date(date), 'dd MMMM yyyy, EEEE', { locale: tr })}
-                          </p>
-                        </div>
-                        <Badge variant="outline">
-                          {new Date(date) < new Date() ? 'Tamamlandı' : 'Gelecek'}
-                        </Badge>
-                      </div>
-                    ))}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3 font-medium">No</th>
+                          <th className="text-left p-3 font-medium">Ders Başlığı</th>
+                          <th className="text-left p-3 font-medium">Öğretmen</th>
+                          <th className="text-left p-3 font-medium">Tarih</th>
+                          <th className="text-left p-3 font-medium">Zoom</th>
+                          <th className="text-left p-3 font-medium">Ders Kaydı</th>
+                          <th className="text-left p-3 font-medium">Durum</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { no: 1, title: 'Python Nedir? Giriş', date: '2024-02-01 18:00', status: 'completed', recordLink: 'https://example.com/record1' },
+                          { no: 2, title: 'Değişkenler ve Veri Tipleri', date: '2024-02-03 18:00', status: 'completed', recordLink: 'https://example.com/record2' },
+                          { no: 3, title: 'Koşullu İfadeler', date: '2024-02-08 18:00', status: 'completed', recordLink: 'https://example.com/record3' },
+                          { no: 4, title: 'Döngüler - For ve While', date: '2024-02-10 18:00', status: 'upcoming', recordLink: null },
+                          { no: 5, title: 'Listeler ve Tuple’lar', date: '2024-02-15 18:00', status: 'upcoming', recordLink: null },
+                          { no: 6, title: 'Fonksiyonlar', date: '2024-02-17 18:00', status: 'upcoming', recordLink: null },
+                          { no: 7, title: 'Dosya İşlemleri', date: '2024-02-22 18:00', status: 'upcoming', recordLink: null },
+                          { no: 8, title: 'Proje: Basit Oyun Yapımı', date: '2024-02-24 18:00', status: 'upcoming', recordLink: null }
+                        ].map((lesson) => (
+                          <tr key={lesson.no} className="border-b hover:bg-gray-50">
+                            <td className="p-3 font-medium">{lesson.no}</td>
+                            <td className="p-3">{lesson.title}</td>
+                            <td className="p-3 text-muted-foreground">{group.teacher}</td>
+                            <td className="p-3">
+                              <div className="text-sm">
+                                {format(new Date(lesson.date), 'dd MMMM yyyy', { locale: tr })}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {format(new Date(lesson.date), 'HH:mm', { locale: tr })}
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <a 
+                                href={group.zoomLink} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-blue-600 hover:text-blue-700 text-sm"
+                              >
+                                Derse Katıl
+                              </a>
+                            </td>
+                            <td className="p-3">
+                              {lesson.recordLink ? (
+                                <a 
+                                  href={lesson.recordLink} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="text-green-600 hover:text-green-700 text-sm"
+                                >
+                                  Kaydı İzle
+                                </a>
+                              ) : (
+                                <span className="text-gray-400 text-sm">Henüz yok</span>
+                              )}
+                            </td>
+                            <td className="p-3">
+                              <Badge 
+                                variant={lesson.status === 'completed' ? 'default' : 'outline'}
+                                className="text-xs"
+                              >
+                                {lesson.status === 'completed' ? 'Tamamlandı' : 'Gelecek'}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-4 text-sm text-muted-foreground">
+                    <p><strong>Not:</strong> Tarihe tıklayarak ders tarihini değiştirebilirsiniz.</p>
+                    <p>Eğer yeni tarih sonraki dersin tarihini geçerse, tüm sonraki dersler otomatik olarak kaydırılır.</p>
                   </div>
                 </CardContent>
               </Card>
@@ -427,9 +633,12 @@ const TeamLeaderGroupDetail = () => {
                       <thead>
                         <tr>
                           <th className="text-left p-2 border-b">Öğrenci</th>
-                          {lessonDates.slice(0, 4).map((date) => (
-                            <th key={date} className="text-center p-2 border-b text-xs">
-                              {format(new Date(date), 'dd/MM', { locale: tr })}
+                          {moduleBasedLessons.slice(0, 6).map((lesson) => (
+                            <th key={lesson.code} className="text-center p-2 border-b text-xs">
+                              <div>{lesson.code}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {format(new Date(lesson.date), 'dd/MM', { locale: tr })}
+                              </div>
                             </th>
                           ))}
                         </tr>
@@ -438,12 +647,12 @@ const TeamLeaderGroupDetail = () => {
                         {students.map((student) => (
                           <tr key={student.id}>
                             <td className="p-2 border-b font-medium">{student.name}</td>
-                            {lessonDates.slice(0, 4).map((date) => (
-                              <td key={date} className="p-2 border-b text-center">
+                            {moduleBasedLessons.slice(0, 6).map((lesson) => (
+                              <td key={lesson.code} className="p-2 border-b text-center">
                                 <Select
-                                  value={getAttendanceStatus(student.id, date)}
+                                  value={getAttendanceStatus(student.id, lesson.date)}
                                   onValueChange={(value: 'present' | 'absent' | 'excused') => 
-                                    handleAttendanceChange(student.id, date, value)
+                                    handleAttendanceChange(student.id, lesson.date, value)
                                   }
                                 >
                                   <SelectTrigger className="w-20 h-8">
