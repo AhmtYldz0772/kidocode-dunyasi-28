@@ -44,6 +44,7 @@ interface Group {
   weeklyLessons: number;
   studentCount: number;
   whatsappLink?: string;
+  zoomLink?: string;
 }
 
 const TeamLeaderGroups = () => {
@@ -62,7 +63,8 @@ const TeamLeaderGroups = () => {
       endDate: new Date('2024-06-01'),
       weeklyLessons: 2,
       studentCount: 8,
-      whatsappLink: 'https://chat.whatsapp.com/example1'
+      whatsappLink: 'https://chat.whatsapp.com/example1',
+      zoomLink: 'https://zoom.us/j/123456789'
     },
     { 
       id: 2, 
@@ -77,7 +79,8 @@ const TeamLeaderGroups = () => {
       endDate: new Date('2024-06-15'),
       weeklyLessons: 1,
       studentCount: 6,
-      whatsappLink: 'https://chat.whatsapp.com/example2'
+      whatsappLink: 'https://chat.whatsapp.com/example2',
+      zoomLink: 'https://zoom.us/j/987654321'
     },
   ]);
 
@@ -123,7 +126,8 @@ const TeamLeaderGroups = () => {
     endDate: new Date(),
     weeklyLessons: 1,
     selectedStudents: [] as number[],
-    whatsappLink: ''
+    whatsappLink: '',
+    zoomLink: ''
   });
   const [studentSearch, setStudentSearch] = useState('');
 
@@ -177,7 +181,8 @@ const TeamLeaderGroups = () => {
                 endDate: formData.endDate,
                 weeklyLessons: formData.weeklyLessons,
                 studentCount: formData.selectedStudents.length,
-                whatsappLink: formData.whatsappLink
+                whatsappLink: formData.whatsappLink,
+                zoomLink: formData.zoomLink
               }
             : g
         ));
@@ -197,7 +202,8 @@ const TeamLeaderGroups = () => {
       endDate: new Date(),
       weeklyLessons: 1,
       selectedStudents: [],
-      whatsappLink: ''
+      whatsappLink: '',
+      zoomLink: ''
     });
   };
 
@@ -259,6 +265,16 @@ const TeamLeaderGroups = () => {
                   value={formData.whatsappLink || ''}
                   onChange={(e) => setFormData({ ...formData, whatsappLink: e.target.value })}
                   placeholder="https://chat.whatsapp.com/..."
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="zoomLink">Zoom Bağlantısı</Label>
+                <Input
+                  id="zoomLink"
+                  value={formData.zoomLink || ''}
+                  onChange={(e) => setFormData({ ...formData, zoomLink: e.target.value })}
+                  placeholder="https://zoom.us/j/..."
                 />
               </div>
               
@@ -413,6 +429,16 @@ const TeamLeaderGroups = () => {
                   value={formData.whatsappLink || ''}
                   onChange={(e) => setFormData({ ...formData, whatsappLink: e.target.value })}
                   placeholder="https://chat.whatsapp.com/..."
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="editZoomLink">Zoom Bağlantısı</Label>
+                <Input
+                  id="editZoomLink"
+                  value={formData.zoomLink || ''}
+                  onChange={(e) => setFormData({ ...formData, zoomLink: e.target.value })}
+                  placeholder="https://zoom.us/j/..."
                 />
               </div>
               
@@ -600,7 +626,8 @@ const TeamLeaderGroups = () => {
                       endDate: group.endDate,
                       weeklyLessons: group.weeklyLessons,
                       selectedStudents: group.students,
-                      whatsappLink: group.whatsappLink || ''
+                      whatsappLink: group.whatsappLink || '',
+                      zoomLink: group.zoomLink || ''
                     });
                     setIsEditDialogOpen(true);
                   }}

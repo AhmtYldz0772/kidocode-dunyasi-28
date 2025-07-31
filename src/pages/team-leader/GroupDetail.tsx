@@ -19,6 +19,12 @@ interface Student {
   email: string;
   phone: string;
   parentName: string;
+  address: string;
+  registrationDate: Date;
+  username: string;
+  password: string;
+  activeGroups: string[];
+  status: 'active' | 'inactive';
   comments: Comment[];
 }
 
@@ -49,7 +55,8 @@ const TeamLeaderGroupDetail = () => {
     startDate: new Date('2024-02-01'),
     endDate: new Date('2024-06-01'),
     weeklyLessons: 2,
-    whatsappLink: 'https://chat.whatsapp.com/example1'
+    whatsappLink: 'https://chat.whatsapp.com/example1',
+    zoomLink: 'https://zoom.us/j/123456789'
   };
 
   const [students] = useState<Student[]>([
@@ -57,9 +64,15 @@ const TeamLeaderGroupDetail = () => {
       id: 1,
       name: 'Ayşe Yılmaz',
       age: 8,
-      email: 'ayse@email.com',
+      email: 'ayse.yilmaz@email.com',
       phone: '0532 123 4567',
       parentName: 'Mehmet Yılmaz',
+      address: 'İstanbul, Kadıköy',
+      registrationDate: new Date('2024-01-15'),
+      username: 'ayse.yilmaz',
+      password: 'Ay123!@#',
+      activeGroups: ['TUR_PRE_2024_8-10_001'],
+      status: 'active',
       comments: [
         {
           id: 1,
@@ -74,9 +87,15 @@ const TeamLeaderGroupDetail = () => {
       id: 2,
       name: 'Mehmet Kaya',
       age: 9,
-      email: 'mehmet@email.com',
+      email: 'mehmet.kaya@email.com',
       phone: '0533 234 5678',
       parentName: 'Fatma Kaya',
+      address: 'Ankara, Çankaya',
+      registrationDate: new Date('2024-01-20'),
+      username: 'mehmet.kaya',
+      password: 'Meh456$%^',
+      activeGroups: ['TUR_PRE_2024_8-10_001'],
+      status: 'active',
       comments: []
     }
   ]);
@@ -144,44 +163,58 @@ const TeamLeaderGroupDetail = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Grup Bilgileri */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Grup Bilgileri</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <Label className="text-sm font-medium">Kurs</Label>
-              <p className="text-sm">{group.course}</p>
+      {/* Grup Bilgileri */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-l-blue-500">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl text-blue-900 flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Grup Bilgileri
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white p-4 rounded-lg shadow-sm border">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Kurs</Label>
+              <p className="text-lg font-medium text-gray-900 mt-1">{group.course}</p>
             </div>
-            <div>
-              <Label className="text-sm font-medium">Öğretmen</Label>
-              <p className="text-sm">{group.teacher}</p>
+            <div className="bg-white p-4 rounded-lg shadow-sm border">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Öğretmen</Label>
+              <p className="text-lg font-medium text-gray-900 mt-1">{group.teacher}</p>
             </div>
-            <div>
-              <Label className="text-sm font-medium">Başlama Tarihi</Label>
-              <p className="text-sm">{format(group.startDate, 'dd MMMM yyyy', { locale: tr })}</p>
+            <div className="bg-white p-4 rounded-lg shadow-sm border">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Başlama Tarihi</Label>
+              <p className="text-lg font-medium text-gray-900 mt-1">{format(group.startDate, 'dd MMM yyyy', { locale: tr })}</p>
             </div>
-            <div>
-              <Label className="text-sm font-medium">Bitiş Tarihi</Label>
-              <p className="text-sm">{format(group.endDate, 'dd MMMM yyyy', { locale: tr })}</p>
+            <div className="bg-white p-4 rounded-lg shadow-sm border">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Bitiş Tarihi</Label>
+              <p className="text-lg font-medium text-gray-900 mt-1">{format(group.endDate, 'dd MMM yyyy', { locale: tr })}</p>
             </div>
-            <div>
-              <Label className="text-sm font-medium">Haftalık Ders</Label>
-              <p className="text-sm">{group.weeklyLessons} ders</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <div className="bg-white p-4 rounded-lg shadow-sm border">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Haftalık Ders</Label>
+              <p className="text-lg font-medium text-gray-900 mt-1">{group.weeklyLessons} ders</p>
             </div>
-            <div>
-              <Label className="text-sm font-medium">WhatsApp Grubu</Label>
-              <a href={group.whatsappLink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
-                Gruba Katıl
+            <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">WhatsApp Grubu</Label>
+              <a href={group.whatsappLink} target="_blank" rel="noopener noreferrer" className="text-lg font-medium text-green-600 hover:text-green-700 mt-1 block">
+                Gruba Katıl →
               </a>
             </div>
-          </CardContent>
-        </Card>
+            <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Zoom Bağlantısı</Label>
+              <a href={group.zoomLink} target="_blank" rel="noopener noreferrer" className="text-lg font-medium text-blue-600 hover:text-blue-700 mt-1 block">
+                Derse Katıl →
+              </a>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Ana İçerik */}
-        <div className="lg:col-span-2">
+      {/* Ana İçerik */}
+      <Card>
+        <CardContent className="p-6">
           <Tabs defaultValue="students" className="space-y-4">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="students">
@@ -247,9 +280,41 @@ const TeamLeaderGroupDetail = () => {
                                   <p className="text-sm">{student.phone}</p>
                                 </div>
                               </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Veli Adı Soyadı</Label>
+                                  <p className="text-sm">{student.parentName}</p>
+                                </div>
+                                <div>
+                                  <Label>Durum</Label>
+                                  <Badge variant={student.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                                    {student.status === 'active' ? 'Aktif' : 'Pasif'}
+                                  </Badge>
+                                </div>
+                              </div>
                               <div>
-                                <Label>Veli Adı</Label>
-                                <p className="text-sm">{student.parentName}</p>
+                                <Label>Adres</Label>
+                                <p className="text-sm">{student.address}</p>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Kullanıcı Adı</Label>
+                                  <p className="text-sm font-mono bg-muted p-2 rounded">{student.username}</p>
+                                </div>
+                                <div>
+                                  <Label>Şifre</Label>
+                                  <p className="text-sm font-mono bg-muted p-2 rounded">{student.password}</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Kayıt Tarihi</Label>
+                                  <p className="text-sm">{student.registrationDate.toLocaleDateString('tr-TR')}</p>
+                                </div>
+                                <div>
+                                  <Label>Aktif Gruplar</Label>
+                                  <p className="text-sm">{student.activeGroups.length > 0 ? student.activeGroups.join(', ') : 'Henüz gruba eklenmemiş'}</p>
+                                </div>
                               </div>
                               
                               <div className="space-y-3">
@@ -406,8 +471,8 @@ const TeamLeaderGroupDetail = () => {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
